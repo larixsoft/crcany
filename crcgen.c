@@ -47,7 +47,7 @@
 
 /* Generate C code to compute the given CRC. This generates code that will work
    with the architecture and compiler that it is being run on. */
-
+#ifndef BUILD_SUMX
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,7 +59,9 @@
 #include <unistd.h>
 #include "model.h"
 #include "crc.h"
-
+#else
+#include "crcgen.h"
+#endif
 // Define WORD_BIT and LONG_BIT for a non-POSIX-compliant limit.h. Also define
 // similar constants SHRT_BIT and INTMAX_BIT.
 #ifndef SHRT_BIT
@@ -123,7 +125,10 @@
 // computation of the CRC of "123456789" (nine bytes), and a comparison to the
 // check value. If the check value does not match the computed CRC, then the
 // generated code prints an error to stderr.
-static void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
+#ifndef BUILD_SUMX
+static
+#endif
+void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
                     FILE *defs, FILE *test) {
     // provide usage information in the header, and make sure size_t is defined
     fprintf(head,
@@ -785,7 +790,10 @@ static void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
 // replaced by the number of bits in the CRC. The returned name is allocated
 // space, or NULL if there was an error. This transformation is tuned to the
 // names that appear in the RevEng CRC catalogue.
-static char *crc_name(model_t *model) {
+#ifndef BUILD_SUMX
+static
+#endif
+char *crc_name(model_t *model) {
     char *id = model->name;
     char *name = malloc(8 + strlen(id));
     if (name == NULL)
@@ -824,7 +832,10 @@ static char *crc_name(model_t *model) {
 // return true, with no open handles and *head and *code containing NULL. If
 // the problem was a source file that already existed, then create_source()
 // will return 2. Otherwise it will return 1 on error, 0 on success.
-static int create_source(char *src, char *name, FILE **head, FILE **code) {
+#ifndef BUILD_SUMX
+static
+#endif
+int create_source(char *src, char *name, FILE **head, FILE **code) {
     // for error return
     *head = NULL;
     *code = NULL;
@@ -865,6 +876,8 @@ static int create_source(char *src, char *name, FILE **head, FILE **code) {
     return 0;
 }
 
+
+#ifndef BUILD_SUMX
 // Subdirectory for source files.
 #define SRC "src"
 
@@ -960,3 +973,7 @@ int main(void) {
     fclose(test);
     return 0;
 }
+
+#else
+
+#endif
