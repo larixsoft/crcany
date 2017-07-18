@@ -8,6 +8,10 @@
 
 #include "model.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Run buf[0..len-1] through the CRC described in model.  If buf is NULL, then
    return the initial CRC for this model.  This allows for the calculation of a
    CRC in pieces, but the first call must be with crc equal to the initial
@@ -64,5 +68,9 @@ void crc_table_wordwise(model_t *);
    approach.  This assumes that model->table_byte and model->table_word have
    been initialized using crc_table_wordwise(). */
 word_t crc_wordwise(model_t *, word_t, void const *, size_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

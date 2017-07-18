@@ -10,6 +10,15 @@
 #include "model.h"
 #include "crc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void crc_gen(model_t *model, char *name, FILE *head, FILE *code, FILE *defs, FILE *test);
 char *crc_name(model_t *model);
 int create_source(char *src, char *name, FILE **head, FILE **code);
+
+
+#ifdef __cplusplus
+}
+#endif

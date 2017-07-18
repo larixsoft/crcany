@@ -973,7 +973,4 @@ int main(void) {
     fclose(test);
     return 0;
 }
-
-#else
-
 #endif

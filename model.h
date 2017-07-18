@@ -15,6 +15,10 @@
 #include <stdint.h>
 #include <limits.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Verify that the number of bits in a char is eight, using limits.h. */
 #if CHAR_BIT != 8
 #  error The number of bits in a char must be 8 for this code.
@@ -163,5 +167,9 @@ void process_model(model_t *model);
    will be allocated.  *line will be reallocated as needed for longer input
    lines. */
 ssize_t getcleanline(char **line, size_t *size, FILE *in);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,9 @@
 
 #include "model.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Similar to crc_bitwise(), but works for CRCs up to twice as long as a
    word_t. This processes long CRCs stored in two word_t values, *crc_hi and
    *crc_lo. The final CRC is returned in *crc_hi and *crc_lo.  If buf is NULL,
@@ -34,4 +37,7 @@ void crc_bitwise_dbl(model_t *, word_t *, word_t *,
    word_t. */
 void crc_zeros_dbl(model_t *, word_t *, word_t *, size_t);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
