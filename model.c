@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#if defined(_WIN32) || defined(_WINDOWS)
+#if defined(_WIN32) || defined(_WINDOWS) || defined(WIN32)
 #define strncasecmp _strnicmp
 #include <stdlib.h>
 static size_t getline(char **lineptr, size_t *n, FILE *stream);
@@ -45,7 +45,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream) {
   }
   p = bufptr;
   while (c != EOF) {
-    if ((p - bufptr) > (size - 1)) {
+    if ((p - bufptr) > (int)(size - 1)) {
       size = size + 128;
       bufptr = realloc(bufptr, size);
       if (bufptr == NULL) {
@@ -303,7 +303,7 @@ int read_model(model_t *model, char *str)
                 bad |= WIDTH;
                 continue;
             }
-            model->width = lo;
+            model->width = (unsigned short)lo;
             got |= WIDTH;
         }
         else if (strncasecmp(name, "poly", n) == 0) {

@@ -798,13 +798,13 @@ char *crc_name(model_t *model) {
     char *name = malloc(8 + strlen(id));
     if (name == NULL)
         return NULL;
-#if defined(_WIN32) || defined (_WINDOWS)
+#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
     char *next = strcpy(name, "crc");
 #else
     char *next = stpcpy(name, "crc");
 #endif
     next += sprintf(next, "%u", model->width);
-#if defined(_WIN32) || defined (_WINDOWS)
+#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
     if (_strnicmp(id, "crc", 3) == 0) {
 #else
     if (strncasecmp(id, "crc", 3) == 0) {

@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#if defined(WIN32) || defined (_WINDOWS)
+#if defined(WIN32) || defined (_WINDOWS) || defined(WIN32)
 #include <io.h>
 #include <direct.h>
 #else
