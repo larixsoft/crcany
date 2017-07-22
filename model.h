@@ -15,6 +15,11 @@
 #include <stdint.h>
 #include <limits.h>
 
+#if defined(WIN32) || defined(_WINDOWS)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -6,7 +6,12 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#if defined(WIN32) || defined (_WINDOWS)
+#include <io.h>
+#include <direct.h>
+#else
 #include <unistd.h>
+#endif
 #include "model.h"
 #include "crc.h"
 
