@@ -798,13 +798,13 @@ char *crc_name(model_t *model) {
     char *name = malloc(8 + strlen(id));
     if (name == NULL)
         return NULL;
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     char *next = strcpy(name, "crc");
 #else
     char *next = stpcpy(name, "crc");
 #endif
     next += sprintf(next, "%u", model->width);
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     if (_strnicmp(id, "crc", 3) == 0) {
 #else
     if (strncasecmp(id, "crc", 3) == 0) {
@@ -849,30 +849,30 @@ int create_source(char *src, char *name, FILE **head, FILE **code) {
     *code = NULL;
 
     // create the src directory if it does not exist
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     int ret = _mkdir(src);
 #else
     int ret = mkdir(src, 0755);
-#endif    
+#endif
     if (ret && errno != EEXIST)
         return 1;
 
     // construct the path for the source files, leaving suff pointing to the
     // position for the 'h' or 'c'.
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     char path[_MAX_PATH];
 #else
     char path[strlen(src) + 1 + strlen(name) + 2 + 1];
 #endif
 
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     char *suff = strcpy(path, src);
 #else
     char *suff = stpcpy(path, src);
 #endif
 
     *suff++ = '/';
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
     suff = strcpy(suff, name);
 #else
     suff = stpcpy(suff, name);
@@ -894,7 +894,7 @@ int create_source(char *src, char *name, FILE **head, FILE **code) {
         fclose(*head);
         *head = NULL;
         *suff = 'h';
-#if defined(_WIN32) || defined (_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
         _unlink(path);
 #else
         unlink(path);

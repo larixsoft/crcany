@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <limits.h>
 
-#if defined(WIN32) || defined(_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
 #include <BaseTsd.h>
 typedef SSIZE_T ssize_t;
 #endif

@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#if defined(_WIN32) || defined(_WINDOWS) || defined(WIN32)
+#if defined(_MSC_VER)
 #define strncasecmp _strnicmp
 #include <stdlib.h>
 static size_t getline(char **lineptr, size_t *n, FILE *stream);
