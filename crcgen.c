@@ -1,5 +1,5 @@
 /*
-  crcgen version 1.6, 11 February 2017
+  crcgen version 1.7, 23 December 2017
 
   Copyright (C) 2016, 2017 Mark Adler
 
@@ -43,6 +43,8 @@
    1.5  23 Oct 2016  Improve use of data types and C99 compatibility
    1.6  11 Feb 2017  Add creation of remaining bits function (_rem)
                      Improve the generated comments and prototypes
+   1.7  23 Dec 2017  Update to the latest CRC catalog
+                     Minor improvements to code generation
  */
 
 /* Generate C code to compute the given CRC. This generates code that will work
@@ -216,7 +218,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
             crc_t, name, crc_t);
     fprintf(code,
         "\n"
-        "// This code assumes that %s is %u-bytes.\n"
+        "// This code assumes that %s is %u bytes.\n"
         "\n"
         "%s %s_bit(%s crc, void const *mem, size_t len) {\n"
         "    unsigned char const *data = mem;\n"
@@ -377,7 +379,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
             fprintf(code,
         "    crc <<= %u;\n", 8 - model->width);
         fprintf(code,
-        "    val &= ((1U << bits) - 1) << (8 - bits);\n"
+        "    val &= 0x100 - (0x100 >> bits) ;\n"
         "    crc ^= val;\n"
         "    while (bits--)\n"
         "        crc = crc & 0x80 ? (crc << 1) ^ %#"X" : crc << 1;\n",
@@ -402,7 +404,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
     }
     else {
         fprintf(code,
-        "    val &= ((1U << bits) - 1) << (8 - bits);\n"
+        "    val &= 0x100 - (0x100 >> bits) ;\n"
         "    crc ^= (%s)val << %u;\n"
         "    while (bits--)\n"
         "        crc = crc & %#"X" ? (crc << 1) ^ %#"X" : crc << 1;\n",
