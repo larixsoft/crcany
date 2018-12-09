@@ -62,6 +62,8 @@
 #else
 #include "crcgen.h"
 #endif
+
+#ifndef BUILD_SUMX
 // Define WORD_BIT and LONG_BIT for a non-POSIX-compliant limit.h. Also define
 // similar constants SHRT_BIT and INTMAX_BIT.
 #ifndef SHRT_BIT
@@ -110,7 +112,7 @@
 #    error Unexpected integer size
 #  endif
 #endif
-
+#endif
 // printf() directive to print a uintmax_t in hexadecimal (e.g. "llx" or "jx").
 #define X PRIxMAX
 
@@ -309,8 +311,15 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
           "}\n", code);
 
     // write test code for bit-wise function
+#ifdef BUILD_SUMX
+  if(defs)
+  {
+#endif
     fprintf(defs,
         "#include \"%s.h\"\n", name);
+#ifdef BUILD_SUMX
+  }
+#endif
     fprintf(test,
         "\n"
         "    // %s\n"
@@ -845,8 +854,13 @@ static
 #endif
 int create_source(char *src, char *name, FILE **head, FILE **code) {
     // for error return
+#ifdef BUILD_SUMX
+    if(head) *head = NULL;
+    if(code) *code = NULL;
+#else
     *head = NULL;
     *code = NULL;
+#endif
 
     // create the src directory if it does not exist
 #if defined(_MSC_VER)
@@ -881,19 +895,44 @@ int create_source(char *src, char *name, FILE **head, FILE **code) {
     suff[1] = 0;
 
     // create header file
+#ifdef BUILD_SUMX
+  if(head)
+  {
+#endif
     *suff = 'h';
+#ifdef BUILD_SUMX
+    *head = fopen(path, "w");
+#else
     *head = fopen(path, "wx");
+#endif
     if (*head == NULL)
         return errno == EEXIST ? 2 : 1;
-
+#ifdef BUILD_SUMX
+  }
+#endif
     // create code file
+#ifdef BUILD_SUMX
+  if(code)
+  {
+#endif
     *suff = 'c';
+#ifdef BUILD_SUMX
+    *code = fopen(path, "w");
+#else
     *code = fopen(path, "wx");
+#endif
     if (*code == NULL) {
         int err = errno;
+#ifdef BUILD_SUMX
+      if(head && *head)
+      {
+#endif
         fclose(*head);
         *head = NULL;
         *suff = 'h';
+#ifdef BUILD_SUMX
+      }
+#endif
 #if defined(_MSC_VER)
         _unlink(path);
 #else
@@ -901,6 +940,9 @@ int create_source(char *src, char *name, FILE **head, FILE **code) {
 #endif
         return err == EEXIST ? 2 : 1;
     }
+#ifdef BUILD_SUMX
+  }
+#endif
 
     // all good -- return handles for header and code
     return 0;
