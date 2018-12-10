@@ -145,26 +145,69 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "// multiple of eight. The %s bits bits of the low byte of val are applied to\n"
         "// crc. bits must be in 0..8.\n"
         "\n"
+#ifdef BUILD_SUMX
+        "#include <stddef.h>\n"
+        "#include <stdint.h>\n", model->ref ? "low" : "high");
+#else
         "#include <stddef.h>\n", model->ref ? "low" : "high");
-
+#endif
     // select the unsigned integer type to be used for CRC calculations
     char *crc_t;
     unsigned crc_t_bit;
+
+#ifdef BUILD_SUMX
+    char *crc_table_t;
+    unsigned crc_table_t_bit;
+
+    if (model->width <= CHAR_BIT) {
+        crc_t = "uint8_t";
+        crc_t_bit = CHAR_BIT;
+        crc_table_t = "uint8_t";
+        crc_table_t_bit = CHAR_BIT;
+    }
+    else if (model->width <= SHRT_BIT) {
+        crc_t = "uint16_t";
+        crc_t_bit = SHRT_BIT;
+        crc_table_t = "uint16_t";
+        crc_table_t_bit = SHRT_BIT;
+    }
+    else
+#endif 
     if (model->width <= WORD_BIT) {
+#ifdef BUILD_SUMX
+        crc_t = "uint32_t";
+        crc_t_bit = WORD_BIT;
+        crc_table_t = "uint32_t";
+        crc_table_t_bit = WORD_BIT;
+#else
         crc_t = "unsigned";
         crc_t_bit = WORD_BIT;
+#endif
     }
     else if (model->width <= LONG_BIT) {
+#ifdef BUILD_SUMX
+        crc_t = "uint64_t";
+        crc_t_bit = LONG_BIT;
+        crc_table_t = "uint64_t";
+        crc_table_t_bit = LONG_BIT;
+#else
         crc_t = "unsigned long";
         crc_t_bit = LONG_BIT;
+#endif
     }
     else {
         fputs(
         "#include <stdint.h>\n", head);
         crc_t = "uintmax_t";
         crc_t_bit = INTMAX_BIT;
+#ifdef BUILD_SUMX
+        crc_table_t = "uintmax_t";
+        crc_table_t_bit = INTMAX_BIT;
+#endif
     }
 
+
+#ifndef BUILD_SUMX
     // select the unsigned integer type to be used for table entries
     char *crc_table_t;
     unsigned crc_table_t_bit;
@@ -180,7 +223,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         crc_table_t = crc_t;
         crc_table_t_bit = crc_t_bit;
     }
-
+#endif
     // include the header in the code
     fprintf(code,
         "#include <stdint.h>\n"
