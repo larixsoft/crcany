@@ -172,7 +172,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         crc_table_t_bit = SHRT_BIT;
     }
     else
-#endif 
+#endif
     if (model->width <= WORD_BIT) {
 #ifdef BUILD_SUMX
         crc_t = "uint32_t";
@@ -285,7 +285,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "    crc &= %#"X";\n", ONES(model->width));
         fprintf(code,
         "    while (len--) {\n"
-        "        crc ^= *data++;\n"
+        "        crc ^= *(data++);\n"
         "        for (unsigned k = 0; k < 8; k++)\n"
         "            crc = crc & 1 ? (crc >> 1) ^ %#"X" : crc >> 1;\n"
         "    }\n", model->poly);
@@ -307,7 +307,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "    crc <<= %u;\n", 8 - model->width);
         fprintf(code,
         "    while (len--) {\n"
-        "        crc ^= *data++;\n"
+        "        crc ^= *(data++);\n"
         "        for (unsigned k = 0; k < 8; k++)\n"
         "            crc = crc & 0x80 ? (crc << 1) ^ %#"X" : crc << 1;\n"
         "    }\n", model->poly << (8 - model->width));
@@ -332,7 +332,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
     else {
         fprintf(code,
         "    while (len--) {\n"
-        "        crc ^= (%s)(*data++) << %u;\n"
+        "        crc ^= (%s)(*(data++)) << %u;\n"
         "        for (unsigned k = 0; k < 8; k++)\n"
         "            crc = crc & %#"X" ? (crc << 1) ^ %#"X" : crc << 1;\n"
         "    }\n",
@@ -367,12 +367,18 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
 #endif
     fprintf(test,
         "\n"
+#ifndef BUILD_SUMX
         "    // %s\n"
+#endif
         "    init = %s_bit(0, NULL, 0);\n"
         "    if (%s_bit(init, \"123456789\", 9) != %#"X")\n"
         "        fputs(\"bit-wise mismatch for %s\\n\", stderr);\n"
         "    crc = %s_bit(init, data + 1, sizeof(data) - 1);\n",
+#ifndef BUILD_SUMX
             name, name, name, model->check, name, name);
+#else
+                  name, name, model->check, name, name);
+#endif
 
     // bit-wise CRC calculation function for a small number of bits (0..8)
     fprintf(head,
@@ -578,11 +584,11 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
             fputs(
         "    while (len--)\n"
         "        crc = (crc >> 8) ^\n"
-        "              table_byte[(crc ^ *data++) & 0xff];\n", code);
+        "              table_byte[(crc ^ *(data++)) & 0xff];\n", code);
         else
             fputs(
         "    while (len--)\n"
-        "        crc = table_byte[crc ^ *data++];\n", code);
+        "        crc = table_byte[crc ^ *(data++)];\n", code);
 
     }
     else if (model->width <= 8) {
@@ -594,7 +600,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "    crc <<= %u;\n", 8 - model->width);
         fputs(
         "    while (len--)\n"
-        "        crc = table_byte[crc ^ *data++];\n", code);
+        "        crc = table_byte[crc ^ *(data++)];\n", code);
         if (model->width < 8)
             fprintf(code,
         "    crc >>= %u;\n", 8 - model->width);
@@ -603,7 +609,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         fprintf(code,
         "    while (len--)\n"
         "        crc = (crc << 8) ^\n"
-        "              table_byte[((crc >> %u) ^ *data++) & 0xff];\n",
+        "              table_byte[((crc >> %u) ^ *(data++)) & 0xff];\n",
                 model->width - 8);
         if (model->width != crc_t_bit && !model->rev)
             fprintf(code,
@@ -686,10 +692,10 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         if (model->width > 8)
             fputs(
         "        crc = (crc >> 8) ^\n"
-        "              table_byte[(crc ^ *data++) & 0xff];\n", code);
+        "              table_byte[(crc ^ *(data++)) & 0xff];\n", code);
         else
             fputs(
-        "        crc = table_byte[crc ^ *data++];\n", code);
+        "        crc = table_byte[crc ^ *(data++)];\n", code);
         fputs(
         "        len--;\n"
         "    }\n", code);
@@ -704,7 +710,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "    crc <<= %u;\n", shift);
         fprintf(code,
         "    while (len && ((ptrdiff_t)data & %#x)) {\n"
-        "        crc = table_byte[crc ^ *data++];\n"
+        "        crc = table_byte[crc ^ *(data++)];\n"
         "        len--;\n"
         "    }\n", WORDCHARS - 1);
     }
@@ -712,7 +718,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         fprintf(code,
         "    while (len && ((ptrdiff_t)data & %#x)) {\n"
         "        crc = (crc << 8) ^\n"
-        "              table_byte[((crc >> %u) ^ *data++) & 0xff];\n"
+        "              table_byte[((crc >> %u) ^ *(data++)) & 0xff];\n"
         "        len--;\n"
         "    }\n", WORDCHARS - 1, shift);
     }
@@ -799,16 +805,16 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
             fputs(
         "    while (len--)\n"
         "        crc = (crc >> 8) ^\n"
-        "              table_byte[(crc ^ *data++) & 0xff];\n", code);
+        "              table_byte[(crc ^ *(data++)) & 0xff];\n", code);
         else
             fputs(
         "    while (len--)\n"
-        "        crc = table_byte[crc ^ *data++];\n", code);
+        "        crc = table_byte[crc ^ *(data++)];\n", code);
     }
     else if (model->width <= 8) {
         fputs(
         "    while (len--)\n"
-        "        crc = table_byte[crc ^ *data++];\n", code);
+        "        crc = table_byte[crc ^ *(data++)];\n", code);
         if (model->width < 8)
             fprintf(code,
         "    crc >>= %u;\n", shift);
@@ -817,7 +823,7 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         fprintf(code,
         "    while (len--)\n"
         "        crc = (crc << 8) ^\n"
-        "              table_byte[((crc >> %u) ^ *data++) & 0xff];\n",
+        "              table_byte[((crc >> %u) ^ *(data++)) & 0xff];\n",
         shift);
         if (model->width != crc_t_bit && !model->rev)
             fprintf(code,
@@ -838,31 +844,20 @@ void crc_gen(model_t *model, char *name, FILE *head, FILE *code,
         "        fputs(\"word-wise mismatch for %s\\n\", stderr);\n",
             name, name, model->check, name, name);
 }
-
+#ifndef BUILD_SUMX
 // Make a base name for the CRC routines and source files, making use of the
 // name in the model description. All names start with "crc*", where "*" is
 // replaced by the number of bits in the CRC. The returned name is allocated
 // space, or NULL if there was an error. This transformation is tuned to the
 // names that appear in the RevEng CRC catalogue.
-#ifndef BUILD_SUMX
-static
-#endif
-char *crc_name(model_t *model) {
+static char *crc_name(model_t *model) {
     char *id = model->name;
     char *name = malloc(8 + strlen(id));
     if (name == NULL)
         return NULL;
-#if defined(_MSC_VER)
-    char *next = strcpy(name, "crc");
-#else
     char *next = stpcpy(name, "crc");
-#endif
     next += sprintf(next, "%u", model->width);
-#if defined(_MSC_VER)
-    if (_strnicmp(id, "crc", 3) == 0) {
-#else
     if (strncasecmp(id, "crc", 3) == 0) {
-#endif
         id += 3;
         if (*id == '-')
             id++;
@@ -894,107 +889,47 @@ char *crc_name(model_t *model) {
 // return true, with no open handles and *head and *code containing NULL. If
 // the problem was a source file that already existed, then create_source()
 // will return 2. Otherwise it will return 1 on error, 0 on success.
-#ifndef BUILD_SUMX
-static
-#endif
-int create_source(char *src, char *name, FILE **head, FILE **code) {
+static int create_source(char *src, char *name, FILE **head, FILE **code) {
     // for error return
-#ifdef BUILD_SUMX
-    if(head) *head = NULL;
-    if(code) *code = NULL;
-#else
     *head = NULL;
     *code = NULL;
-#endif
 
     // create the src directory if it does not exist
-#if defined(_MSC_VER)
-    int ret = _mkdir(src);
-#else
     int ret = mkdir(src, 0755);
-#endif
     if (ret && errno != EEXIST)
         return 1;
 
     // construct the path for the source files, leaving suff pointing to the
     // position for the 'h' or 'c'.
-#if defined(_MSC_VER)
-    char path[_MAX_PATH];
-#else
     char path[strlen(src) + 1 + strlen(name) + 2 + 1];
-#endif
-
-#if defined(_MSC_VER)
-    char *suff = strcpy(path, src);
-#else
     char *suff = stpcpy(path, src);
-#endif
-
     *suff++ = '/';
-#if defined(_MSC_VER)
-    suff = strcpy(suff, name);
-#else
     suff = stpcpy(suff, name);
-#endif
     *suff++ = '.';
     suff[1] = 0;
 
     // create header file
-#ifdef BUILD_SUMX
-  if(head)
-  {
-#endif
     *suff = 'h';
-#ifdef BUILD_SUMX
-    *head = fopen(path, "w");
-#else
     *head = fopen(path, "wx");
-#endif
     if (*head == NULL)
         return errno == EEXIST ? 2 : 1;
-#ifdef BUILD_SUMX
-  }
-#endif
+
     // create code file
-#ifdef BUILD_SUMX
-  if(code)
-  {
-#endif
     *suff = 'c';
-#ifdef BUILD_SUMX
-    *code = fopen(path, "w");
-#else
     *code = fopen(path, "wx");
-#endif
     if (*code == NULL) {
         int err = errno;
-#ifdef BUILD_SUMX
-      if(head && *head)
-      {
-#endif
         fclose(*head);
         *head = NULL;
         *suff = 'h';
-#ifdef BUILD_SUMX
-      }
-#endif
-#if defined(_MSC_VER)
-        _unlink(path);
-#else
         unlink(path);
-#endif
         return err == EEXIST ? 2 : 1;
     }
-#ifdef BUILD_SUMX
-  }
-#endif
 
     // all good -- return handles for header and code
     return 0;
 }
 
-
-#ifndef BUILD_SUMX
 // Subdirectory for source files.
 #define SRC "src"
 
